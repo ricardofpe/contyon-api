@@ -1,13 +1,134 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleType {
+  ADMIN_MASTER
+  COLLABORATOR
+  CLIENT
+}
+
+model User {
+  id           String  @id @default(uuid())
+  name         String
+  email        String  @unique
+  passwordHash String
+  active       Boolean @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships OfficeMember[]
+  sessions    UserSession[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id String @id @default(uuid())
+
+  userId String
+
+  refreshTokenHash String
+
+  ip        String?
+  userAgent String?
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_sessions")
+}
+
+model Office {
+  id String @id @default(uuid())
+
+  name String
+
+  slug String? @unique
+
+  cnpj String?
+
+  email String?
+  phone String?
+
+  logoUrl String?
+
+  timezone String @default("America/Sao_Paulo")
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members OfficeMember[]
+
+  @@map("offices")
+}
+
+model OfficeMember {
+  id String @id @default(uuid())
+
+  officeId String
+  userId   String
+
+  role RoleType
+
+  createdAt DateTime @default(now())
+
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  permissions OfficeMemberPermission[]
+
+  @@unique([officeId, userId])
+  @@index([officeId])
+  @@index([userId])
+  @@map("office_members")
+}
+
+model Permission {
+  id String @id @default(uuid())
+
+  name String
+
+  slug String @unique
+
+  description String?
+
+  createdAt DateTime @default(now())
+
+  officeMembersPermissions OfficeMemberPermission[]
+
+  @@map("permissions")
+}
+
+model OfficeMemberPermission {
+  id String @id @default(uuid())
+
+  officeMemberId String
+  permissionId   String
+
+  createdAt DateTime @default(now())
+
+  officeMember OfficeMember @relation(fields: [officeMemberId], references: [id], onDelete: Cascade)
+
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([officeMemberId, permissionId])
+  @@index([officeMemberId])
+  @@index([permissionId])
+  @@map("office_member_permissions")
 }

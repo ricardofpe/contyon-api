@@ -18,7 +18,11 @@ model User {
   name         String
   email        String  @unique
   passwordHash String
-  active       Boolean @default(true)
+  active Boolean @default(false)
+
+  emailVerified Boolean @default(false)
+
+  emailVerifiedAt DateTime?
 
   lastLoginAt DateTime?
 

@@ -7,9 +7,19 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.user.findMany();
-  }
+async findAll() {
+  return this.prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      active: true,
+      emailVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
 
   async create(data: CreateUserDto) {
     const userExists = await this.prisma.user.findUnique({
@@ -36,6 +46,14 @@ export class UsersService {
             createdAt: true
         }
     })
+}
+
+async findByEmail(email: string) {
+  return this.prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
 }
 
 }

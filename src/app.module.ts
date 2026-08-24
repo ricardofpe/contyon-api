@@ -5,7 +5,6 @@ import { UsersModule } from './modules/users/users.module';
 import { OfficesModule } from './modules/offices/offices.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { ConfigModule } from '@nestjs/config';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -13,7 +12,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
 
     PrismaModule,
-
     AuthModule,
     UsersModule,
     OfficesModule,
